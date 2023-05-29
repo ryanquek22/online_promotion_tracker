@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <div class="test">Testing</div>
     {% for obj in object_list %}
         <div>
             <a href={{obj.get_absolute_url}}>{{obj.name}}</a>
