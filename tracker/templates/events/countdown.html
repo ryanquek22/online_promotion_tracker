@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+    <script src={% static 'main.js' %} defer></script>
+{% endblock scripts %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-6">
+            <div>{{object.name}} promotion will end on:</div>
+        </div>
+        <div class="col-6">
+            <div id="event-box">{{object.when_ms}}</div>
+        </div>
+    </div>
+    <div> Time left:</div>
+    <div id="countdown-box" class="text-center mt-3 h1">
+        <div class="spinner-border" role="status"></div>
+    </div>    
+{% endblock content%}
