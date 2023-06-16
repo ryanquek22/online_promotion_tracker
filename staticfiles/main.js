@@ -1,66 +1,183 @@
-console.log('hello world')
-
-const eventBox = document.getElementById('event-box')
-
-const countdownBox = document.getElementById('countdown-box')
-
-var daysElement = document.createElement("div")
-daysElement = setAttribute("id", "days-counter")
-daysElement.classList.add("flip-box-days")
-
-var hoursElement = document.createElement("div")
-hoursElement = setAttribute("id", "hours-counter")
-hoursElement.classList.add("flip-box-hours")
-
-var minsElement = document.createElement("div")
-minsElement = setAttribute("id", "mins-counter")
-minsElement.classList.add("flip-box-mins")
-
-var secsElement = document.createElement("div")
-secsElement = setAttribute("id", "secs-counter")
-secsElement.classList.add("flip-box-secs")
-
-countdownBox.append(daysElement)
-countdownBox.append(hoursElement)
-countdownBox.append(minsElement)
-countdownBox.append(secsElement)
-
-//console.log(typeof parseInt(eventBox.innerHTML))
-//console.log("after eventBox")
-//const eventDate = Date.parse(eventBox.textContent)
-const eventDate = parseInt(eventBox.innerHTML)
-//console.log(eventDate)
-console.log('after event date')
-
-const myCountdown = setInterval(()=> {
-    const now = new Date().getTime()
-    //console.log(now)
-
-    const diff = eventDate - now
-    console.log('diff')
-    console.log(diff)
-
-    const d = Math.floor(eventDate / (1000 * 60 * 60 * 24) - (now / (1000 * 60 * 60 * 24)))
-    //const d = Math.floor(diff / (1000 * 60 * 60 * 24))
-    const h = Math.floor((eventDate / (1000 * 60 * 60) - (now / (1000 * 60 * 60 ))) % 24)
-    //const h = Math.floor((diff / (1000 * 60 * 60 )) % 24) 
-    const m = Math.floor((eventDate / (1000 * 60) - (now / (1000 * 60 ))) % 60)
-    //m = Math.floor((diff / (1000 * 60)) % 60)
-    const s = Math.floor((eventDate / (1000) - (now / (1000))) % 60)
-    //s = Math.floor((diff / 1000) % 60)
-    //console.log(s)
+function createTimeSectionWithId (idName) {
+    var segmentOverlayTop = document.createElement("div")
+    segmentOverlayTop.classList.add("segment-overlay-top")
     
-    //diff -= 1000
-    if (diff > 0) {
-        //countdownBox.innerHTML = d + " days, " + h + " hours, " + m + " mins, " + s + " seconds"
-        daysElement.innerHTML = d
-        hoursElement.innerHTML = h
-        minsElement.innerHTML = m
-        secsElement.innerHTML = s
-    } else {
-        clearInterval(myCountdown)
-        countdownBox.innerHTML = "Promotion period is over. Sign up for an email notification to make sure you do not miss any promotions"
+
+    var segementOverlayBottom = document.createElement("div")
+    segementOverlayBottom.classList.add("segment-overlay-bottom")
+    
+
+    var segmentOverlay = document.createElement("div")
+    segmentOverlay.classList.add("segment-overlay")
+    
+    segmentOverlay.append(segmentOverlayTop)
+    segmentOverlay.append(segementOverlayBottom)
+
+    var segmentDisplayTop = document.createElement("div")
+    segmentDisplayTop.classList.add("segment-display-top")
+    
+
+    var segmentDisplayBottom = document.createElement("div")
+    segmentDisplayBottom.classList.add("segment-display-bottom")
+    
+
+    var segmentDisplay = document.createElement("div")
+    segmentDisplay.classList.add("segment-display")
+    segmentDisplay.append(segmentDisplayTop)
+    segmentDisplay.append(segmentDisplayBottom)
+    segmentDisplay.append(segmentOverlay)
+
+    var timeSegment = document.createElement("div")
+    timeSegment.classList.add("time-segment")
+    timeSegment.append(segmentDisplay)
+
+    var timeGroup = document.createElement("div")
+    timeGroup.classList.add("time-group")
+    timeGroup.append(timeSegment)
+
+    var TimeSection = document.createElement("div")
+    TimeSection.classList.add("time-section")
+    TimeSection.setAttribute("id", idName)
+    TimeSection.append(timeGroup)
+
+    return TimeSection;
+}
+
+function getTimeSegmentElements(segmentElement) {
+    const segmentDisplay = segmentElement.querySelector('.segment-display');
+    
+    const segmentDisplayTop = segmentDisplay.querySelector('.segment-display-top');
+    
+    const segmentDisplayBottom= segmentDisplay.querySelector('.segment-display-bottom');
+    
+    const segmentOverlay = segmentDisplay.querySelector('.segment-overlay');
+    
+    const segmentOverlayTop = segmentOverlay.querySelector('.segment-overlay-top');
+    
+    const segmentOverlayBottom = segmentOverlay.querySelector('.segment-overlay-bottom');
+    
+    return {
+        segmentDisplayTop,
+        segmentDisplayBottom,
+        segmentOverlay,
+        segmentOverlayTop,
+        segmentOverlayBottom,
+    }
+}
+
+function updateSegmentValues(displayElement, overlayElement, value) {
+    displayElement.textContent = value;
+    overlayElement.textContent = value;
+}
+
+function updateTimeSegment(segmentElement, timeValue) {
+    const segmentElements = getTimeSegmentElements(segmentElement);
+
+    if (parseInt(segmentElements.segmentDisplayTop.textContent, 10) === timeValue) {
+        return;
     }
 
-}, 1000)
+    segmentElements.segmentOverlay.classList.add('flip');
+
+    updateSegmentValues(
+        segmentElements.segmentDisplayTop,
+        segmentElements.segmentOverlayBottom,
+        timeValue
+    );
+
+    function finishAnimation() {
+        segmentElements.segmentOverlay.classList.remove('flip');
+        updateSegmentValues(
+            segmentElements.segmentDisplayBottom,
+            segmentElements.segmentOverlayTop,
+            timeValue
+        );
+
+        this.removeEventListener('animationend', finishAnimation);
+    }
+
+    segmentElements.segmentOverlay.addEventListener('animationend', finishAnimation)
+}
+
+function updateTimeSection(sectionId, timeValue) {
+    const firstNumber = Math.floor(timeValue / 10);
+    const secondNumber = timeValue % 10;
+
+    const sectionElement = document.getElementById(sectionId);
+    const timeSegments = sectionElement.querySelectorAll('.time-segment');
+   updateTimeSegment(timeSegments[0], timeValue);
+}
+
+function getTimeRemainig(targetDateTime) {
+    const nowTime = Date.now();
+    const secondsRemainig = targetDateTime - nowTime;
+
+    const complete = nowTime >= targetDateTime;
+
+    if (complete) {
+        return {
+            complete,
+            d : 0,
+            h: 0,
+            m: 0,
+            s: 0
+        };
+    }
+    const diff = secondsRemainig;
+
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const h = Math.floor((diff / (1000 * 60 * 60 )) % 24) 
+    const m = Math.floor((diff / (1000 * 60)) % 60)
+    const s = Math.floor((diff/ (1000) % 60))
+
+    return {
+        complete,
+        d,
+        h,
+        m,
+        s
+    }
+}
+
+function updateAllSegments () {
+    //const targetTimeStamp = new Date(targetDate).getTime();
+    const targetTimeStamp = eventDate_ms;
+    const timeRemmainigBits = getTimeRemainig(targetTimeStamp);
+
+    updateTimeSection('day', timeRemmainigBits.d);
+    updateTimeSection('hour', timeRemmainigBits.h);
+    updateTimeSection('min', timeRemmainigBits.m);
+    updateTimeSection('sec', timeRemmainigBits.s);
+
+    return timeRemmainigBits.complete;
+}
+
+const eventBox = document.getElementById('event-box')
+const eventDate_ms = parseInt(eventBox.innerHTML) //this is where I get the value from the HTML file
+//const eventDate_ms = 1687492798714;
+var dayTimeSection = createTimeSectionWithId("day") 
+var hourTimeSection = createTimeSectionWithId("hour")
+var minTimeSection = createTimeSectionWithId("min")
+var secTimeSection = createTimeSectionWithId("sec")
+
+const countdownBox = document.getElementById('countdown-box')
+countdownBox.append(dayTimeSection)
+countdownBox.append(hourTimeSection)
+countdownBox.append(minTimeSection)
+countdownBox.append(secTimeSection)
+
+const countdownTimer = setInterval(() => {
+
+    const isComplete = updateAllSegments();
+
+    if (isComplete) {
+        clearInterval(countdownTimer);
+        countdownBox.innerHTML = "PROMOTION IS OVER"
+    }
+    
+}, 1000);
+
+updateAllSegments();
+
+
 
